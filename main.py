@@ -1,17 +1,21 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
+import os
 
 app = Flask(__name__)
-latest_message = ""
+last_message = ""
 
-@app.route('/send', methods=['POST'])
-def send_message():
-    global latest_message
-    latest_message = request.form.get('message', '')
-    return f"Messaggio ricevuto: {latest_message}"
+@app.route("/message", methods=["POST"])
+def set_message():
+    global last_message
+    data = request.get_json()
+    last_message = data.get("message", "")
+    return jsonify({"status": "received", "message": last_message})
 
-@app.route('/get', methods=['GET'])
+@app.route("/message", methods=["GET"])
 def get_message():
-    return latest_message
+    global last_message
+    return jsonify({"message": last_message})
 
-app.run()
-
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
